@@ -2,6 +2,7 @@
 package zgeo
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/oschwald/maxminddb-golang"
@@ -69,6 +70,10 @@ func LoadGetLiteCityDB(p string) error {
 }
 
 func GetCityInfoByGeoIp(geoIp string) (country string, region string, err error) {
+	if geoDb == nil {
+		err = fmt.Errorf("geo mnodule not load db file")
+		return
+	}
 	ip := net.ParseIP(geoIp)
 	var cityInfo fullCity
 
