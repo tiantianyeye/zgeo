@@ -60,10 +60,15 @@ type fullCity struct {
 	//} `maxminddb:"traits"`
 }
 
+var (
+	loadErr = "WARNING:LoadGetLiteCityDB Path:%s, Err:%s!!!\nMESSAGE:加载Geo数据库错误,使用本地geo需要使用相应的基础镜像getsimple, geo数据库在相应镜像的/app目录下,详细信息参见zgeo README.md\n"
+	getErr  = "WARNING:GetCityInfoByGeoIp Err:%s!!! \nMessage:加载Geo数据库错误, 使用本地geo需要使用相应的基础镜像getsimple, geo数据库在相应镜像的/app目录下, 详细信息参见zgeo README.md\n"
+)
+
 func LoadGetLiteCityDB(p string) error {
 	rd, err := maxminddb.Open(p)
 	if err != nil {
-		return err
+		return fmt.Errorf(loadErr, p, err.Error())
 	}
 	geoDb = rd
 	return nil
@@ -71,14 +76,15 @@ func LoadGetLiteCityDB(p string) error {
 
 func GetCityInfoByGeoIp(geoIp string) (country string, region string, err error) {
 	if geoDb == nil {
-		err = fmt.Errorf("geo mnodule not load db file")
+		err = fmt.Errorf(getErr, "not init")
 		return
 	}
 	ip := net.ParseIP(geoIp)
 	var cityInfo fullCity
 
-	err = geoDb.Lookup(ip, &cityInfo)
-	if err != nil {
+	lookErr := geoDb.Lookup(ip, &cityInfo)
+	if lookErr != nil {
+		err = fmt.Errorf(getErr, lookErr.Error())
 		return
 	}
 
